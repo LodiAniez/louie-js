@@ -1,0 +1,11 @@
+{
+  "name": "aniezlouie-js",
+  "version": "1.0.0",
+  "description": "a miniature state management library written in javascript",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Dexter Louie Aniez",
+  "license": "ISC"
+}
