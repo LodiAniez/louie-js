@@ -17,11 +17,23 @@ class LouieJS {
 	private states: object
 	private mutations: object
 	private actions: object
+	private receiverfn: FunctionConstructor
 
-	constructor (states: object, mutations: object, actions: object) {
+	/**
+	 * 
+	 * @param states is an object, collection of states
+	 * @param mutations is an object, collection of pure functions
+	 * @param actions is an object, collection of functions
+	 * @param receiverFn is a function, this will trigger every time there is an update in state
+	 */
+	constructor (states: object, mutations: object, actions: object, receiverFn: FunctionConstructor) {
 		this.states = states
+
 		this.mutations = mutations
 		this.actions = actions
+		this.receiverfn = receiverFn
+
+		this.onStateChanges()
 	}
 
 	/**
@@ -106,18 +118,35 @@ class LouieJS {
 	 * if not null, it will send the update for this specific state
 	 * @returns a subscribable function, as long as the client is subscibed, it will receive the state update
 	 */
-	onStateChanges(fn: FunctionConstructor, obj: object) {
-		try {
-			if (!fn || typeof fn !== "function") throw new Error("Invalid argument type, a valid callback function must be provided as a parameter.")
+	onStateChanges() {
+		const callReceiver = (thisIntance, target, property) => {
+			if (this.receiverfn) {
+				this.receiverfn.call(thisIntance, target, property)
+			}
+		}
 
-			new Proxy(obj, {
-				set(target, property) {
-					fn.call(this, property)
+		try {
+			if (!this.isFunction(this.receiverfn)) throw new Error("Invalid argument type, a valid callback function must be provided as a parameter.")
+
+			this.states = new Proxy(this.states, {
+				set(target, property, value) {
+					target[property] = value
+					callReceiver(this, target, property)
+					
 					return true
 				}
 			})
 		} catch (err) {
 			throw err
 		}
+	}
+
+	private isFunction(fn: any) {
+		return (
+			(typeof fn == "function") ||
+			(fn instanceof Function) ||
+			(Object.prototype.toString.call(fn) == '[object Function]') ||
+			({}.toString.call(fn) == '[object Function]')
+		)
 	}
 }

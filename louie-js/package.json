@@ -1,6 +1,6 @@
 {
   "name": "aniezlouie-js",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "a miniature state management library written in javascript",
   "main": "dist/index.js",
   "scripts": {

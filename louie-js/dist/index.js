@@ -10,10 +10,19 @@
  * or call an action from a view controller using `dispatch` method
  */
 class LouieJS {
-    constructor(states, mutations, actions) {
+    /**
+     *
+     * @param states is an object, collection of states
+     * @param mutations is an object, collection of pure functions
+     * @param actions is an object, collection of functions
+     * @param receiverFn is a function, this will trigger every time there is an update in state
+     */
+    constructor(states, mutations, actions, receiverFn) {
         this.states = states;
         this.mutations = mutations;
         this.actions = actions;
+        this.receiverfn = receiverFn;
+        this.onStateChanges();
     }
     /**
      *
@@ -60,7 +69,9 @@ class LouieJS {
             const actionFn = actionKeys.find(name => name === actionName);
             if (actionFn) {
                 this.actions[actionName]
-                    .call(this, { commit: (commitName, commitPayload) => this.commit(commitName, commitPayload) }, payload);
+                    .call(this, {
+                    commit: (commitName, commitPayload) => this.commit(commitName, commitPayload)
+                }, payload);
             }
         }
         catch (err) {
@@ -92,13 +103,19 @@ class LouieJS {
      * if not null, it will send the update for this specific state
      * @returns a subscribable function, as long as the client is subscibed, it will receive the state update
      */
-    onStateChanges(fn) {
+    onStateChanges() {
+        const callReceiver = (thisIntance, target, property) => {
+            if (this.receiverfn) {
+                this.receiverfn.call(thisIntance, target, property);
+            }
+        };
         try {
-            if (!fn || typeof fn !== "function")
+            if (!this.isFunction(this.receiverfn))
                 throw new Error("Invalid argument type, a valid callback function must be provided as a parameter.");
-            new Proxy(this.states, {
-                set(target, property) {
-                    fn.call(this, property);
+            this.states = new Proxy(this.states, {
+                set(target, property, value) {
+                    target[property] = value;
+                    callReceiver(this, target, property);
                     return true;
                 }
             });
@@ -106,5 +123,11 @@ class LouieJS {
         catch (err) {
             throw err;
         }
+    }
+    isFunction(fn) {
+        return ((typeof fn == "function") ||
+            (fn instanceof Function) ||
+            (Object.prototype.toString.call(fn) == '[object Function]') ||
+            ({}.toString.call(fn) == '[object Function]'));
     }
 }
