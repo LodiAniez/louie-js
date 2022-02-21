@@ -9,7 +9,6 @@
  * we can call the mutation here using the `commit` method,
  * or call an action from a view controller using `dispatch` method
  */
-
 class LouieJS {
 	/**
 	 * Properties should be private to avoid direct
@@ -68,7 +67,13 @@ class LouieJS {
 
 			if (actionFn) {
 				this.actions[actionName]
-					 .call(this, { commit: (commitName: string, commitPayload: object) => this.commit(commitName, commitPayload) },  payload)
+					 .call(
+						 this, 
+						 { 
+							commit: (commitName: string, commitPayload: object) => this.commit(commitName, commitPayload)
+						 }, 
+						 payload
+					 )
 			}
 		} catch (err) {
 			throw err
@@ -90,6 +95,27 @@ class LouieJS {
 			if (!state) throw new Error("State not found from store.")
 
 			return this.states[statename]
+		} catch (err) {
+			throw err
+		}
+	}
+
+	/**
+	 * 
+	 * @param statename is optional, if null, it will send update to client for whatever changes occured on all states,
+	 * if not null, it will send the update for this specific state
+	 * @returns a subscribable function, as long as the client is subscibed, it will receive the state update
+	 */
+	onStateChanges(fn: FunctionConstructor, obj: object) {
+		try {
+			if (!fn || typeof fn !== "function") throw new Error("Invalid argument type, a valid callback function must be provided as a parameter.")
+
+			new Proxy(obj, {
+				set(target, property) {
+					fn.call(this, property)
+					return true
+				}
+			})
 		} catch (err) {
 			throw err
 		}

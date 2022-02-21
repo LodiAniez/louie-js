@@ -86,4 +86,25 @@ class LouieJS {
             throw err;
         }
     }
+    /**
+     *
+     * @param statename is optional, if null, it will send update to client for whatever changes occured on all states,
+     * if not null, it will send the update for this specific state
+     * @returns a subscribable function, as long as the client is subscibed, it will receive the state update
+     */
+    onStateChanges(fn) {
+        try {
+            if (!fn || typeof fn !== "function")
+                throw new Error("Invalid argument type, a valid callback function must be provided as a parameter.");
+            new Proxy(this.states, {
+                set(target, property) {
+                    fn.call(this, property);
+                    return true;
+                }
+            });
+        }
+        catch (err) {
+            throw err;
+        }
+    }
 }
