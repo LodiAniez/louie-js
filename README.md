@@ -15,6 +15,8 @@ in this mutation function (`Note: NEVER mutate the state to avoid memory leak`)
 in a form of an object, `commit` key is a function that will take 2 arguments when called, first arg is the mutation function name as a string, second arg is the
 payload.
 
+`stateListener` should be a function, this will trigger everytime a state is updated
+
 you can check the examples below.
 
 ### Example
@@ -41,6 +43,11 @@ const actions = {
     commit("addItem", payload)
   }
 }
+
+const stateListener = (target, property) {
+  /** Your logic here */
+  const updateView = target[property]
+}
 ```
 
 ## 2nd step
@@ -49,7 +56,7 @@ Create a `LouieJS` instance globally, passing the states, mutations and actions
 ### Example
 
 ```javascript
-const louiejs = new LouieJS(states, mutations, actions)
+const louiejs = new LouieJS(states, mutations, actions, stateListener)
 ```
 
 ## Last step
@@ -66,6 +73,17 @@ interface CartItem {
 
 function addItemToCart(item: CartItem) {
   louiejs.dispatch("addToCart", item) /** Dispatch will take care of the rest */
+}
+```
+
+you can watch for state update by adding logic inside your stateListener function
+
+### Example
+
+```typescript
+const stateListener = (target, property) {
+  /** Re-initialize variables by the new value of the state */
+  const toUpdateView = target[property]
 }
 ```
 
