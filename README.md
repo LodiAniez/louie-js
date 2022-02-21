@@ -94,5 +94,3 @@ you can get the latest value of your state by accessing the `getState` method, t
 ```typescript
 const cart: Array<CartItem> = louiejs.getState("cart")
 ```
-
-Currently, you can use a custom observable to watch state changes, this feature is currently in progress and will be available on the next release.
